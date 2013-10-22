@@ -11,5 +11,8 @@ module Doorkeeper
 
     class MissingRequestStrategy < DoorkeeperError
     end
+
+    class AuthenticationError < DoorkeeperError
+    end
   end
 end

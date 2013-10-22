@@ -5,11 +5,10 @@ module Doorkeeper
     include Doorkeeper::Models::Revocable
     include Doorkeeper::Models::Accessible
     include Doorkeeper::Models::Scopes
-
+    attr_encrypted :token, key: ENV['ATTR_ENCRYPTED_KEY']
     belongs_to :application, :class_name => "Doorkeeper::Application", :inverse_of => :access_tokens
 
     validates :application_id, :token, :presence => true
-    validates :token, :uniqueness => true
     validates :refresh_token, :uniqueness => true, :if => :use_refresh_token?
 
     attr_accessor :use_refresh_token
@@ -21,7 +20,8 @@ module Doorkeeper
     before_validation :generate_refresh_token, :on => :create, :if => :use_refresh_token?
 
     def self.authenticate(token)
-      where(:token => token).first
+      token_encrypted = Doorkeeper::AccessToken.encrypt_token(token)
+      where(:encrypted_token => token_encrypted).first
     end
 
     def self.by_refresh_token(refresh_token)
